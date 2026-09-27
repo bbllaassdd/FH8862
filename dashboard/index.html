@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FH8862 答辩控制台</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">FH</span>
+      <div>
+        <strong>FH8862 答辩控制台</strong>
+        <span>四大三队 · 双码流与录像演示</span>
+      </div>
+    </div>
+    <div class="system-state">
+      <span class="status-dot" id="serverDot"></span>
+      <span>本地服务</span>
+      <span class="divider"></span>
+      <span class="status-dot" id="vlcDot"></span>
+      <span id="vlcStatus">检测 VLC</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="overview">
+      <div>
+        <p class="eyebrow">PRESENTATION MODE</p>
+        <h1>视频流、录像和验收集中控制</h1>
+        <p class="subtitle">开发板持续向 Windows 发送 UDP；本页面负责打开 VLC、保存 60 秒录像和管理演示文件。</p>
+      </div>
+      <div class="command-box">
+        <span>开发板启动命令</span>
+        <code id="boardCommand">./project_fh8862 192.168.1.2 1234</code>
+        <button class="icon-button" id="copyCommand" title="复制命令" aria-label="复制命令">复制</button>
+      </div>
+    </section>
+
+    <nav class="tabs" aria-label="页面视图">
+      <button class="tab active" data-tab="control">演示控制</button>
+      <button class="tab" data-tab="settings">编码参数</button>
+      <button class="tab" data-tab="files">录像文件</button>
+    </nav>
+
+    <div class="tab-page active" id="controlPage">
+      <section class="stream-grid">
+        <article class="stream-panel main-stream">
+          <div class="stream-heading">
+            <div>
+              <span class="stream-index">CH 0</span>
+              <h2>主码流</h2>
+            </div>
+            <span class="live-badge">UDP <b id="mainPortBadge">1234</b></span>
+          </div>
+          <div class="metric-row">
+            <div><span>分辨率</span><strong id="mainResolution">1280 × 720</strong></div>
+            <div><span>帧率</span><strong id="mainFpsMetric">25 fps</strong></div>
+            <div><span>码率</span><strong id="mainBitrateMetric">1.75 Mbps</strong></div>
+          </div>
+          <div class="stream-actions">
+            <button class="button primary" data-open-stream="main"><span class="button-icon">▶</span>打开 VLC</button>
+            <button class="button record" data-record-stream="main"><span class="record-dot"></span>录制 60 秒</button>
+          </div>
+          <div class="record-state" id="mainRecordState">
+            <div class="record-copy">
+              <span id="mainRecordLabel">等待操作</span>
+              <strong id="mainRecordTime">00:00</strong>
+            </div>
+            <div class="progress-track"><span id="mainProgress"></span></div>
+          </div>
+        </article>
+
+        <article class="stream-panel sub-stream">
+          <div class="stream-heading">
+            <div>
+              <span class="stream-index">CH 1</span>
+              <h2>子码流</h2>
+            </div>
+            <span class="live-badge">UDP <b id="subPortBadge">1235</b></span>
+          </div>
+          <div class="metric-row">
+            <div><span>分辨率</span><strong id="subResolution">640 × 360</strong></div>
+            <div><span>帧率</span><strong id="subFpsMetric">15 fps</strong></div>
+            <div><span>码率</span><strong id="subBitrateMetric">512 Kbps</strong></div>
+          </div>
+          <div class="stream-actions">
+            <button class="button primary" data-open-stream="sub"><span class="button-icon">▶</span>打开 VLC</button>
+            <button class="button record" data-record-stream="sub"><span class="record-dot"></span>录制 60 秒</button>
+          </div>
+          <div class="record-state" id="subRecordState">
+            <div class="record-copy">
+              <span id="subRecordLabel">等待操作</span>
+              <strong id="subRecordTime">00:00</strong>
+            </div>
+            <div class="progress-track"><span id="subProgress"></span></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="workflow-band">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">DEMO CHECKLIST</p>
+            <h2>现场演示顺序</h2>
+          </div>
+          <button class="button secondary" id="openBoth">同时打开两路 VLC</button>
+        </div>
+        <ol class="workflow">
+          <li><span>01</span><div><strong>启动板端程序</strong><p>确认目标 IP 和主端口与上方命令一致。</p></div></li>
+          <li><span>02</span><div><strong>打开双码流</strong><p>主流 1234、子流 1235 同时预览。</p></div></li>
+          <li><span>03</span><div><strong>按 GPIO24</strong><p>板端录像开始，流水灯运行三秒。</p></div></li>
+          <li><span>04</span><div><strong>PC 端录像</strong><p>选择一路，页面自动保存 60 秒 TS。</p></div></li>
+        </ol>
+      </section>
+    </div>
+
+    <div class="tab-page" id="settingsPage">
+      <section class="settings-layout">
+        <div class="settings-intro">
+          <p class="eyebrow">ENCODER CONFIG</p>
+          <h2>编码参数</h2>
+          <p>保存后更新 <code>src/project_stream_config.h</code>。需要把 Project 复制到 Ubuntu 重新编译，再将新程序放到开发板。</p>
+          <div class="notice"><strong>注意</strong><span>页面不能在线修改开发板中已经运行的二进制。</span></div>
+        </div>
+        <form id="settingsForm">
+          <fieldset>
+            <legend>网络</legend>
+            <label><span>Windows 接收 IP</span><input name="receiverIp" type="text" value="192.168.1.2"></label>
+            <label><span>主码流端口</span><input name="mainPort" type="number" min="1024" max="65534" value="1234"></label>
+            <p class="field-note">子码流自动使用主端口 + 1。</p>
+          </fieldset>
+          <div class="form-columns">
+            <fieldset>
+              <legend>主码流 CH 0</legend>
+              <label><span>宽度</span><input name="mainWidth" type="number" value="1280"></label>
+              <label><span>高度</span><input name="mainHeight" type="number" value="720"></label>
+              <label><span>帧率</span><input name="mainFps" type="number" value="25"></label>
+              <label><span>码率 bps</span><input name="mainBitrate" type="number" value="1750000"></label>
+            </fieldset>
+            <fieldset>
+              <legend>子码流 CH 1</legend>
+              <label><span>宽度</span><input name="subWidth" type="number" value="640"></label>
+              <label><span>高度</span><input name="subHeight" type="number" value="360"></label>
+              <label><span>帧率</span><input name="subFps" type="number" value="15"></label>
+              <label><span>码率 bps</span><input name="subBitrate" type="number" value="512000"></label>
+            </fieldset>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="button secondary" id="resetDefaults">恢复作业参数</button>
+            <button type="submit" class="button primary">保存并生成配置</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div class="tab-page" id="filesPage">
+      <section class="files-section">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">WINDOWS RECORDINGS</p>
+            <h2>录像文件</h2>
+            <p id="recordingsPath">Project\recordings</p>
+          </div>
+          <div class="file-actions">
+            <input type="file" id="importFile" accept=".h264,.ts,.mp4,.mkv" hidden>
+            <button class="button secondary" id="importButton">导入虚拟机录像</button>
+            <button class="button secondary" id="openFolder">打开文件夹</button>
+          </div>
+        </div>
+        <div class="import-hint">
+          先把虚拟机/NFS 中的 <code>project_device_1280x720_25fps_60s.h264</code> 复制到 Windows，
+          再点击“导入虚拟机录像”。PC 端录像会自动保存在这里。
+        </div>
+        <div class="file-table-wrap">
+          <table>
+            <thead><tr><th>文件名</th><th>格式</th><th>大小</th><th>修改时间</th><th></th></tr></thead>
+            <tbody id="fileList"></tbody>
+          </table>
+          <div class="empty-state" id="emptyFiles">
+            <strong>还没有录像文件</strong>
+            <span>录制一路视频，或导入从虚拟机复制的 H.264。</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

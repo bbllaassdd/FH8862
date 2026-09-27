@@ -1,0 +1,12 @@
+{
+    "receiverIp":  "192.168.1.2",
+    "mainPort":  1234,
+    "mainWidth":  1280,
+    "mainHeight":  720,
+    "mainFps":  25,
+    "mainBitrate":  1750000,
+    "subWidth":  640,
+    "subHeight":  360,
+    "subFps":  15,
+    "subBitrate":  512000
+}
